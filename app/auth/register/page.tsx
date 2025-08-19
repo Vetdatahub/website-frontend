@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff, Database, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,34 +9,60 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { registerUserSchema } from "@/schemas/auth"
+import { z } from 'zod'
+import toast from "react-hot-toast"
+import axiosInstance from "@/utils/axiosInstance"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
+    username: "",
     email: "",
     affiliation: "",
     role: "",
     password: "",
     confirmPassword: "",
-    agreeToTerms: false,
     subscribeNewsletter: false
   })
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const router  = useRouter()
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async () => {
+
+    try {
+        registerUserSchema.parse(formData)
+         // Handle form submission logic here
+        console.log("Form submitted with data:", formData)
+        
+        const user = await axiosInstance.post('api/auth/register', formData)
+        
+        toast.success("Registration successful!.")
+        router.push('/auth/login')
+    } catch (error) {
+   
+      if (error instanceof z.ZodError) {
+        error.issues.forEach(issue => {
+          toast.error(`Field: ${issue.path.join('.')} - ${issue.message}`)
+        })
+      } else {
+        toast.error("Registration failed. Please try again.")
+      }
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <Link href="/" className="flex items-center justify-center space-x-2 mb-4">
-            <Database className="h-8 w-8 text-green-600" />
-            <span className="text-2xl font-bold text-gray-900">VetDataHub</span>
-          </Link>
           <h1 className="text-2xl font-bold text-gray-900">Join VetDataHub</h1>
           <p className="text-gray-600">Create your account to start sharing and discovering veterinary data</p>
         </div>
@@ -55,8 +81,8 @@ export default function RegisterPage() {
                 <Input 
                   id="firstName"
                   placeholder="John"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  value={formData.first_name}
+                  onChange={(e) => handleInputChange('first_name', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -64,10 +90,19 @@ export default function RegisterPage() {
                 <Input 
                   id="lastName"
                   placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  value={formData.last_name}
+                  onChange={(e) => handleInputChange('last_name', e.target.value)}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">Username *</Label>
+              <Input 
+                id="username"
+                placeholder="johndoe"
+                value={formData.username}
+                onChange={(e) => handleInputChange('username', e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -101,9 +136,9 @@ export default function RegisterPage() {
                     <SelectItem value="researcher">Researcher</SelectItem>
                     <SelectItem value="practitioner">Practitioner</SelectItem>
                     <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="data-engineer">Data Engineer</SelectItem>
-                    <SelectItem value="policy-analyst">Policy Analyst</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="data_engineer">Data Engineer</SelectItem>
+                    <SelectItem value="policy_analyst">Policy Analyst</SelectItem>
+                    <SelectItem value="others">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -166,8 +201,8 @@ export default function RegisterPage() {
               <div className="flex items-start space-x-2">
                 <Checkbox 
                   id="terms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
+                  checked={agreeToTerms}
+                  onCheckedChange={() => setAgreeToTerms(!agreeToTerms)}
                 />
                 <Label htmlFor="terms" className="text-sm leading-relaxed">
                   I agree to the{" "}
@@ -192,7 +227,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button className="w-full" disabled={!formData.agreeToTerms}>
+            <Button className="w-full" disabled={!agreeToTerms} onClick={handleSubmit}>
               Create Account
             </Button>
 
