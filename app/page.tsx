@@ -6,36 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Header from '@/components/header'
+import Footer from '@/components/footer'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Database className="h-8 w-8 text-green-600" />
-              <span className="text-2xl font-bold text-gray-900">VetDataHub</span>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/datasets" className="text-gray-600 hover:text-green-600">Browse Datasets</Link>
-              <Link href="/community" className="text-gray-600 hover:text-green-600">Community</Link>
-              <Link href="/upload" className="text-gray-600 hover:text-green-600">Upload Data</Link>
-              <Link href="#features" className="text-gray-600 hover:text-green-600">Features</Link>
-            </nav>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" asChild>
-                <Link href="/auth/login">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/auth/register">Join Beta</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header/>
       {/* Hero Section */}
       <section className="py-20">
         <div className="container mx-auto px-4 text-center">
@@ -61,7 +39,7 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button variant="outline" size="lg" className="text-lg px-8 py-4" asChild>
-                <Link href="/upload">
+                <Link href="/datasets/upload">
                   Upload First Dataset
                 </Link>
               </Button>
@@ -164,9 +142,15 @@ export default function HomePage() {
             <Card>
               <CardHeader>
                 <Upload className="h-10 w-10 text-green-600 mb-2" />
+                
                 <CardTitle>Easy Data Sharing</CardTitle>
               </CardHeader>
+              <Badge
+                 variant="secondary" className="mb-6 ml-12 bg-green-100 text-green-800 px-4 py-2">
+              Coming Soon
+            </Badge>
               <CardContent>
+
                 <CardDescription className="text-base mb-4">
                   Upload datasets with comprehensive metadata, version control, and flexible licensing. 
                   Support for CSV, JSON, Parquet, NetCDF, and more.
@@ -372,22 +356,14 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-green-600" asChild>
-                <Link href="/upload">
+              <Button size="lg" variant="default" className="text-lg px-8 py-4 border-white" asChild>
+                <Link href="/datasets/upload">
                   Upload Your Data
                 </Link>
               </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-              <div className="flex items-center justify-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-200" />
-                <span className="text-green-100">Free during beta</span>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-200" />
-                <span className="text-green-100">No vendor lock-in</span>
-              </div>
               <div className="flex items-center justify-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-green-200" />
                 <span className="text-green-100">Open source</span>
@@ -426,54 +402,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Database className="h-6 w-6 text-green-400" />
-                <span className="text-xl font-bold">VetDataHub</span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                Empowering veterinary research through open data sharing and collaboration.
-              </p>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Beta Version
-              </Badge>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/datasets" className="hover:text-white">Browse Datasets</Link></li>
-                <li><Link href="/upload" className="hover:text-white">Upload Data</Link></li>
-                <li><Link href="/community" className="hover:text-white">Community</Link></li>
-                <li><Link href="#" className="hover:text-white">API Docs (Coming Soon)</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Community</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/community" className="hover:text-white">Discussions</Link></li>
-                <li><Link href="/auth/register" className="hover:text-white">Beta Program</Link></li>
-                <li><Link href="#" className="hover:text-white">Guidelines (Coming Soon)</Link></li>
-                <li><Link href="#" className="hover:text-white">Support (Coming Soon)</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Privacy Policy (Coming Soon)</Link></li>
-                <li><Link href="#" className="hover:text-white">Terms of Service (Coming Soon)</Link></li>
-                <li><Link href="#" className="hover:text-white">Contact (Coming Soon)</Link></li>
-                <li><Link href="https://github.com/vetdatahub" className="hover:text-white" target="_blank">GitHub</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 VetDataHub. Open source under MIT License. Currently in Beta.</p>
-          </div>
-        </div>
-      </footer>
+    <Footer/>
     </div>
   )
 }
