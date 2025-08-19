@@ -1,35 +1,55 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff, Database } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
+import { loginUserSchema } from "@/schemas/auth"
+import axiosInstance from "@/utils/axiosInstance"
+import z from "zod"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
-    rememberMe: false
   })
+  const router = useRouter();
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async () => {
+    // Handle form submission logic here
+    console.log("Form submitted with data:", formData)
+    try {
+      loginUserSchema.parse(formData)
+      const response  = await axiosInstance.post('/api/auth/token', formData)
+      const {access, refresh} = response.data
+      toast.success('User logged in sucessfully')
+      router.push('/')
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.issues.forEach(issue => {
+          toast.error(`Field: ${issue.path.join('.')} - ${issue.message}`)
+        })
+      } else {
+        toast.error( 'Login failed. Please try again.')
+      }
+    }
+
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="flex items-center justify-center space-x-2 mb-4">
-            <Database className="h-8 w-8 text-green-600" />
-            <span className="text-2xl font-bold text-gray-900">VetDataHub</span>
-          </Link>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-600">Sign in to your account to continue</p>
         </div>
@@ -43,20 +63,20 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email"
-                type="email"
-                placeholder="your.email@institution.edu"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="your.username"
+                value={formData.username}
+                onChange={(e) => handleInputChange('username', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input 
+                <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
@@ -80,20 +100,12 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="remember"
-                  checked={formData.rememberMe}
-                  onCheckedChange={(checked) => handleInputChange('rememberMe', checked as boolean)}
-                />
-                <Label htmlFor="remember" className="text-sm">Remember me</Label>
-              </div>
               <Link href="#" className="text-sm text-green-600 hover:underline">
-                Forgot password? (Coming Soon)
+                Forgot password
               </Link>
             </div>
 
-            <Button className="w-full">
+            <Button className="w-full" onClick={handleSubmit}>
               Sign In
             </Button>
 
@@ -106,15 +118,15 @@ export default function LoginPage() {
               </span>
             </div>
 
-            <div className="relative">
+            {/* <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-gray-500">Or continue with</span>
               </div>
-            </div>
-
+            </div> */}
+            {/* 
             <div className="grid grid-cols-2 gap-4">
               <Button variant="outline">
                 <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
@@ -131,22 +143,9 @@ export default function LoginPage() {
                 </svg>
                 Apple
               </Button>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
-
-        <div className="mt-8 text-center text-sm text-gray-600">
-          <p>
-            By signing in, you agree to our{" "}
-            <Link href="#" className="text-green-600 hover:underline">
-              Terms of Service (Coming Soon)
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="text-green-600 hover:underline">
-              Privacy Policy (Coming Soon)
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   )
