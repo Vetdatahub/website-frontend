@@ -14,7 +14,7 @@ export default function Header() {
             <nav className="hidden md:flex items-center space-x-6">
               <Link href="/datasets" className="text-gray-600 hover:text-green-600">Browse Datasets</Link>
               <Link href="/community" className="text-gray-600 hover:text-green-600">Community</Link>
-              <Link href="/upload" className="text-gray-600 hover:text-green-600">Upload Data</Link>
+              <Link href="/datasets/upload" className="text-gray-600 hover:text-green-600">Upload Data</Link>
             </nav>
             <div className="flex items-center space-x-2">
               <Button variant="outline" asChild>
