@@ -138,17 +138,13 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
             <Card>
               <CardHeader>
                 <Upload className="h-10 w-10 text-green-600 mb-2" />
                 
                 <CardTitle>Easy Data Sharing</CardTitle>
               </CardHeader>
-              <Badge
-                 variant="secondary" className="mb-6 ml-12 bg-green-100 text-green-800 px-4 py-2">
-              Coming Soon
-            </Badge>
               <CardContent>
 
                 <CardDescription className="text-base mb-4">
@@ -181,7 +177,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
             
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <Users className="h-10 w-10 text-green-600 mb-2" />
                 <CardTitle>Research Community</CardTitle>
@@ -197,9 +193,9 @@ export default function HomePage() {
                   <li>• Collaboration matching</li>
                 </ul>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <Shield className="h-10 w-10 text-green-600 mb-2" />
                 <CardTitle>Data Security</CardTitle>
@@ -215,9 +211,9 @@ export default function HomePage() {
                   <li>• Audit trails</li>
                 </ul>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <Zap className="h-10 w-10 text-green-600 mb-2" />
                 <CardTitle>API Integration</CardTitle>
@@ -251,7 +247,7 @@ export default function HomePage() {
                   <li>• Long-term preservation</li>
                 </ul>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </section>
