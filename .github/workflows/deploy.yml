@@ -1,0 +1,128 @@
+name: Deploy Next.js to Droplet (systemd, upload build)
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps & build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload build artifacts to Droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          overwrite: true
+          strip_components: 0
+          source: |
+            .next
+            public
+            package.json
+            package-lock.json
+            next.config.js
+          target: /var/www/nextapp
+
+      - name: Configure systemd & start (install prod deps only)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            # ------------ Config -------------
+            APP_NAME=nextapp
+            APP_DIR=/var/www/nextapp
+            NODE_MAJOR=20
+            PORT=3000
+            ENV_PATH=/etc/${APP_NAME}.env   # loaded by systemd
+            # ---------------------------------
+
+            # Ensure base packages
+            if ! command -v git >/dev/null; then
+              sudo apt-get update -y
+              sudo apt-get install -y git curl
+            fi
+
+            # Ensure Node.js is installed on server (NodeSource LTS)
+            if ! command -v node >/dev/null; then
+              curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            # Ensure app dir exists & permission
+            sudo mkdir -p "$APP_DIR"
+            sudo chown -R "$USER":"$USER" "$APP_DIR"
+
+            cd "$APP_DIR"
+
+            # Write/update production env (optional)
+            if [ -n "${{ secrets.ENV_FILE || '' }}" ]; then
+              echo "${{ secrets.ENV_FILE }}" | sudo tee "$ENV_PATH" >/dev/null
+            fi
+
+            # Install only production dependencies
+            # Uses package-lock.json to create a clean prod tree
+            npm ci --omit=dev
+
+            # Ensure package.json has a start script like:
+            #   "start": "next start -p $PORT"
+            # Create/update systemd service
+            SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
+            sudo tee "$SERVICE_FILE" >/dev/null <<EOF
+            [Unit]
+            Description=Next.js app - ${APP_NAME}
+            After=network.target
+
+            [Service]
+            Type=simple
+            WorkingDirectory=${APP_DIR}
+            EnvironmentFile=-${ENV_PATH}
+            Environment=NODE_ENV=production
+            Environment=PORT=${PORT}
+            ExecStart=/usr/bin/npm run start
+            Restart=always
+            RestartSec=5
+            User=${USER}
+            Group=${USER}
+            NoNewPrivileges=true
+            StandardOutput=journal
+            StandardError=journal
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+
+            # Reload & (re)start the service
+            sudo systemctl daemon-reload
+            sudo systemctl enable "${APP_NAME}.service"
+            sudo systemctl restart "${APP_NAME}.service"
+
+            # Quick health signal
+            sleep 2
+            sudo systemctl is-active "${APP_NAME}.service"
+            echo "✅ ${APP_NAME} running via systemd on port ${PORT}"
