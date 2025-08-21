@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
               </form>
             ) : (
               <div className="space-y-4">
-                {toast.success("Email sent successfully!. We've sent password reset instructions to {" "}")}
+                {toast.success("Email sent successfully!. We've sent password reset instructions to email")}
 
                 <div className="text-sm text-gray-600 space-y-2">
                   <p>If you don't see the email in your inbox:</p>
