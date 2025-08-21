@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import Header from "@/components/header"
 
 export default function DatasetsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -19,24 +20,7 @@ export default function DatasetsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <Database className="h-8 w-8 text-green-600" />
-              <span className="text-2xl font-bold text-green-600">VetDataHub</span>
-            </Link>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/datasets" className="text-green-600 font-medium">Browse Datasets</Link>
-              <Link href="/community" className="text-gray-600 hover:text-green-600">Community</Link>
-              <Link href="/upload" className="text-gray-600 hover:text-green-600">Upload Data</Link>
-            </nav>
-            <Button asChild>
-              <Link href="/upload">Upload Dataset</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Empty State Hero */}
