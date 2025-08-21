@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 import {Toaster} from 'react-hot-toast'
+import { SupportButton } from '@/components/support-button'
 
 export const metadata: Metadata = {
   title: 'VetDataHub',
@@ -28,6 +29,7 @@ html {
       <body>
         <Toaster position="top-right" reverseOrder={true} />
         {children}
+        <SupportButton />
       </body>
     </html>
   )
