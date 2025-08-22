@@ -105,8 +105,8 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > id_deploy
           head -n1 id_deploy | grep -E 'BEGIN (OPENSSH|RSA) PRIVATE KEY' >/dev/null || { echo "Invalid SSH private key"; exit 1; }
 
-      - name: Upload runtime tar via SFTP
-        uses: appleboy/sftp-action@v0.1.7
+      - name: Upload runtime tar via SCP
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
