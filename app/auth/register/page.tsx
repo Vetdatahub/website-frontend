@@ -41,9 +41,9 @@ export default function RegisterPage() {
     try {
         registerUserSchema.parse(formData)
          // Handle form submission logic here
-        console.log("Form submitted with data:", formData)
+
         
-        const user = await axiosInstance.post('api/auth/register', formData)
+        await axiosInstance.post('api/auth/register', formData)
         
         toast.success("Registration successful!.")
         router.push('/auth/login')

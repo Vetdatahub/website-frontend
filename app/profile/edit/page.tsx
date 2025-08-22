@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Save, User, Mail, MapPin, LinkIcon, Upload } from 'lucide-react'
+import { ArrowLeft, Save, Upload } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -275,7 +275,7 @@ export default function EditProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>Choose what notifications you'd like to receive</CardDescription>
+                  <CardDescription>Choose what notifications you&apos;d like to receive</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
@@ -388,7 +388,7 @@ export default function EditProfilePage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium">Show My Datasets</div>
-                        <div className="text-sm text-gray-600">Display datasets you've contributed on your profile</div>
+                        <div className="text-sm text-gray-600">Display datasets you&apos;ve contributed on your profile</div>
                       </div>
                       <Checkbox
                         checked={privacy.showDatasets}

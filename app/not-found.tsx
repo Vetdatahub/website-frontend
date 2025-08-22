@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { Database, Home, Search, ArrowLeft } from 'lucide-react'
+import { Database, Home, Search} from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function NotFound() {
   return (
@@ -16,7 +16,7 @@ export default function NotFound() {
           <div className="text-8xl font-bold text-green-600 mb-4">404</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Page Not Found</h1>
           <p className="text-lg text-gray-600 mb-8">
-            Sorry, we couldn't find the page you're looking for. This might be because the feature is still under development or the URL has changed.
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. This might be because the feature is still under development or the URL has changed.
           </p>
         </div>
 

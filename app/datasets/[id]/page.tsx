@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Download, Star, Calendar, MapPin, Tag, Users, MessageSquare, History, Share2, Heart, Flag, Upload } from 'lucide-react'
+import { ArrowLeft, Download, Star, Calendar, MapPin, Tag,  MessageSquare,  Share2, Heart, Flag, Upload } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

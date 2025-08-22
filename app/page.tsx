@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Upload, Users, Database, Star, ArrowRight, CheckCircle, Globe, Shield, Zap } from 'lucide-react'
+import { Search, Upload, Users, Database, Star, ArrowRight, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -75,7 +75,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-6">Veterinary Research Needs Better Data Sharing</h2>
             <p className="text-lg text-gray-600 mb-8">
               Critical research is slowed by fragmented data, incompatible formats, and lack of collaboration. 
-              It's time for a unified platform that accelerates discovery in animal health.
+              It&apos;s time for a unified platform that accelerates discovery in animal health.
             </p>
           </div>
 
@@ -271,8 +271,8 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "VetDataHub is exactly what our field needed. The platform makes it incredibly easy 
-                  to share our research data while maintaining proper attribution and licensing."
+                  &apos;VetDataHub is exactly what our field needed. The platform makes it incredibly easy
+                  to share our research data while maintaining proper attribution and licensing.&apos;
                 </p>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -294,8 +294,8 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "The collaborative features are game-changing. I've already connected with three 
-                  researchers working on similar projects through the platform."
+                  &apos;The collaborative features are game-changing. I&apos;ve already connected with three
+                  researchers working on similar projects through the platform.&apos;
                 </p>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -317,8 +317,8 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "As a graduate student, having access to diverse datasets from around the world 
-                  has been invaluable for my research. The quality and documentation are excellent."
+                  &apos;As a graduate student, having access to diverse datasets from around the world 
+                  has been invaluable for my research. The quality and documentation are excellent.&apos;
                 </p>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">

@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { ArrowLeft, Mail, CheckCircle } from "lucide-react"
+import { ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 {toast.success("Email sent successfully!. We've sent password reset instructions to email")}
 
                 <div className="text-sm text-gray-600 space-y-2">
-                  <p>If you don't see the email in your inbox:</p>
+                  <p>If you don&apos;t see the email in your inbox:</p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
                     <li>Check your spam or junk folder</li>
                     <li>Make sure you entered the correct email address</li>

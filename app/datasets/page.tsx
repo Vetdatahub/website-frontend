@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, Upload, Users, Database, ArrowRight, Plus } from 'lucide-react'
+import { Search, Filter, Calendar, MapPin, Users, FileText, Star } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,321 +9,293 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
 import Header from "@/components/header"
 
-export default function DatasetsPage() {
+export default function AdvancedSearchPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedSpecies, setSelectedSpecies] = useState<string[]>([])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [dateRange, setDateRange] = useState([2020, 2024])
+  const [sampleSizeRange, setSampleSizeRange] = useState([100, 50000])
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header />
+      <Header/>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Empty State Hero */}
-        <div className="text-center py-16">
-          <div className="max-w-2xl mx-auto">
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Database className="h-12 w-12 text-green-600" />
-            </div>
-            
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Be the First to Share Your Research
-            </h1>
-            <p className="text-lg text-gray-600 mb-8">
-              VetDataHub is launching soon! Help us build the world's largest open veterinary data repository 
-              by uploading your datasets and joining our growing community of researchers.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Button size="lg" asChild>
-                <Link href="/upload">
-                  <Upload className="h-5 w-5 mr-2" />
-                  Upload First Dataset
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/auth/register">
-                  Join Beta Program
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-              <div className="p-4 bg-white rounded-lg border">
-                <div className="text-2xl font-bold text-green-600 mb-2">500+</div>
-                <div className="text-sm text-gray-600">Researchers Signed Up</div>
-              </div>
-              <div className="p-4 bg-white rounded-lg border">
-                <div className="text-2xl font-bold text-green-600 mb-2">25</div>
-                <div className="text-sm text-gray-600">Partner Institutions</div>
-              </div>
-              <div className="p-4 bg-white rounded-lg border">
-                <div className="text-2xl font-bold text-green-600 mb-2">12</div>
-                <div className="text-sm text-gray-600">Countries Represented</div>
-              </div>
-            </div>
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Advanced Search</h1>
+            <p className="text-gray-600">Build complex queries to find exactly what you&apos;re looking for</p>
           </div>
-        </div>
 
-        {/* What You Can Upload */}
-        <section className="py-16">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-12">What Kind of Data Can You Share?</h2>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Search Filters */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-24">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 text-sm font-bold">🐕</span>
-                    </div>
-                    <span>Clinical Trials</span>
+                    <Filter className="h-5 w-5" />
+                    <span>Search Filters</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Treatment outcomes, diagnostic data, patient records, and longitudinal studies 
-                    across companion animals and livestock.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 text-sm font-bold">🧬</span>
-                    </div>
-                    <span>Genomics</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Sequencing data, variant analysis, hereditary disease studies, 
-                    and population genetics across veterinary species.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-purple-600 text-sm font-bold">📊</span>
-                    </div>
-                    <span>Epidemiology</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Disease surveillance, outbreak investigations, vaccination records, 
-                    and public health monitoring data.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <span className="text-orange-600 text-sm font-bold">🔬</span>
-                    </div>
-                    <span>Pathology</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Histopathology images, necropsy findings, diagnostic samples, 
-                    and laboratory test results.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                      <span className="text-red-600 text-sm font-bold">📷</span>
-                    </div>
-                    <span>Imaging</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Radiographs, ultrasound, MRI, CT scans, and other diagnostic 
-                    imaging data with annotations.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                      <span className="text-teal-600 text-sm font-bold">🌍</span>
-                    </div>
-                    <span>Wildlife</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Conservation data, wildlife health monitoring, species distribution, 
-                    and environmental impact studies.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Search Interface (Preview) */}
-        <section className="py-16 bg-white rounded-lg border">
-          <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-2xl font-bold text-center mb-8">
-              Preview: How Researchers Will Discover Your Data
-            </h2>
-            
-            <div className="flex flex-col xl:flex-row gap-8">
-              {/* Filters Sidebar Preview */}
-              <div className="xl:w-1/4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Filter className="h-5 w-5" />
-                      <span>Search Filters</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h3 className="font-medium mb-3">Species</h3>
-                      <div className="space-y-2">
-                        {["Dog", "Cat", "Cattle", "Equine", "Poultry", "Wildlife"].map((species) => (
-                          <div key={species} className="flex items-center space-x-2">
-                            <Checkbox id={species} disabled />
-                            <label htmlFor={species} className="text-sm text-gray-500">{species}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="font-medium mb-3">Category</h3>
-                      <div className="space-y-2">
-                        {["Clinical Trials", "Epidemiology", "Genomics", "Imaging", "Pathology"].map((category) => (
-                          <div key={category} className="flex items-center space-x-2">
-                            <Checkbox id={category} disabled />
-                            <label htmlFor={category} className="text-sm text-gray-500">{category}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Search Results Preview */}
-              <div className="xl:w-3/4">
-                <div className="mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <CardContent className="space-y-6">
+                  {/* Keywords */}
+                  <div className="space-y-2">
+                    <Label>Keywords</Label>
                     <Input 
-                      placeholder="Search datasets, keywords, contributors..." 
-                      className="pl-10 pr-4 py-3"
-                      disabled
+                      placeholder="Enter keywords..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <Card className="opacity-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-center py-12">
-                        <div className="text-center">
-                          <Plus className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-500 mb-2">Your Dataset Could Be Here</h3>
-                          <p className="text-gray-400 mb-4">
-                            Be among the first researchers to share your data and help build this community.
-                          </p>
-                          <Button asChild>
-                            <Link href="/upload">Upload Dataset</Link>
-                          </Button>
+                  <Separator />
+
+                  {/* Species */}
+                  <div className="space-y-3">
+                    <Label>Species</Label>
+                    <div className="space-y-2">
+                      {["Dog", "Cat", "Cattle", "Equine", "Poultry", "Wildlife", "Other"].map((species) => (
+                        <div key={species} className="flex items-center space-x-2">
+                          <Checkbox id={species} />
+                          <Label htmlFor={species} className="text-sm">{species}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Category */}
+                  <div className="space-y-3">
+                    <Label>Category</Label>
+                    <div className="space-y-2">
+                      {["Clinical Trials", "Epidemiology", "Genomics", "Imaging", "Pathology"].map((category) => (
+                        <div key={category} className="flex items-center space-x-2">
+                          <Checkbox id={category} />
+                          <Label htmlFor={category} className="text-sm">{category}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Date Range */}
+                  <div className="space-y-3">
+                    <Label>Data Collection Period</Label>
+                    <div className="space-y-4">
+                      <div className="px-2">
+                        <Slider
+                          value={dateRange}
+                          onValueChange={setDateRange}
+                          min={2000}
+                          max={2024}
+                          step={1}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{dateRange[0]}</span>
+                        <span>{dateRange[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Sample Size */}
+                  <div className="space-y-3">
+                    <Label>Sample Size</Label>
+                    <div className="space-y-4">
+                      <div className="px-2">
+                        <Slider
+                          value={sampleSizeRange}
+                          onValueChange={setSampleSizeRange}
+                          min={10}
+                          max={100000}
+                          step={10}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{sampleSizeRange[0].toLocaleString()}</span>
+                        <span>{sampleSizeRange[1].toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Location */}
+                  <div className="space-y-2">
+                    <Label>Location</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select region" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="north-america">North America</SelectItem>
+                        <SelectItem value="europe">Europe</SelectItem>
+                        <SelectItem value="asia">Asia</SelectItem>
+                        <SelectItem value="africa">Africa</SelectItem>
+                        <SelectItem value="oceania">Oceania</SelectItem>
+                        <SelectItem value="south-america">South America</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Separator />
+
+                  {/* File Format */}
+                  <div className="space-y-2">
+                    <Label>File Format</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Any format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="csv">CSV</SelectItem>
+                        <SelectItem value="json">JSON</SelectItem>
+                        <SelectItem value="parquet">Parquet</SelectItem>
+                        <SelectItem value="excel">Excel</SelectItem>
+                        <SelectItem value="netcdf">NetCDF</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Separator />
+
+                  {/* License */}
+                  <div className="space-y-2">
+                    <Label>License</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Any license" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cc-by">CC-BY-4.0</SelectItem>
+                        <SelectItem value="cc0">CC0</SelectItem>
+                        <SelectItem value="gpl">GPL-3.0</SelectItem>
+                        <SelectItem value="proprietary">Proprietary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button className="w-full">
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Datasets
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Search Results */}
+            <div className="lg:col-span-3">
+              <div className="mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="text-sm text-gray-600">
+                    Found 42 datasets matching your criteria
+                  </div>
+                  <Select defaultValue="relevance">
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="relevance">Most Relevant</SelectItem>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="downloads">Most Downloaded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Search Results */}
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <CardTitle className="text-xl mb-2">
+                            <Link href={`/datasets/${i}`} className="hover:text-green-600">
+                              Canine Orthopedic Conditions Survey {i}
+                            </Link>
+                          </CardTitle>
+                          <div className="flex flex-wrap items-center gap-4 mb-3 text-sm text-gray-600">
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-4 w-4" />
+                              <span>Dr. Sarah Chen, Dr. Michael Torres</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span>4.8</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant="outline">v1.2.0</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="mb-4 text-base">
+                        Comprehensive dataset of 15,000 cases covering common orthopedic conditions in dogs across North America. 
+                        This longitudinal study includes diagnostic imaging, treatment outcomes, and follow-up data spanning 5 years.
+                      </CardDescription>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <Badge variant="secondary">Dog</Badge>
+                        <Badge variant="outline">Clinical Trials</Badge>
+                        <Badge variant="outline">CSV</Badge>
+                        <Badge variant="outline">CC-BY-4.0</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="h-4 w-4" />
+                          <span>North America</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>2019-2024</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Users className="h-4 w-4" />
+                          <span>15,000 cases</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <FileText className="h-4 w-4" />
+                          <span>2.3 GB</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/datasets/${i}`}>View Details</Link>
+                        </Button>
+                        <div className="text-sm text-gray-500">
+                          1,234 downloads • Updated Jan 15, 2024
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2 mt-8">
+                <Button variant="outline" disabled>Previous</Button>
+                <Button variant="outline" className="bg-green-600 text-white">1</Button>
+                <Button variant="outline">2</Button>
+                <Button variant="outline">3</Button>
+                <Button variant="outline">Next</Button>
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Community Building */}
-        <section className="py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl font-bold mb-8">Join the Growing Community</h2>
-            
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <Card>
-                <CardHeader>
-                  <Users className="h-10 w-10 text-green-600 mx-auto mb-2" />
-                  <CardTitle>Research Collaboration</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Connect with researchers worldwide, discuss methodologies, 
-                    and find collaborators for your next project.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Database className="h-10 w-10 text-green-600 mx-auto mb-2" />
-                  <CardTitle>Data Standards</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Help establish best practices for veterinary data sharing 
-                    and contribute to global research standards.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Upload className="h-10 w-10 text-green-600 mx-auto mb-2" />
-                  <CardTitle>Early Impact</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Be recognized as a founding contributor and help shape 
-                    the future of veterinary data sharing.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="bg-green-50 rounded-lg p-8">
-              <h3 className="text-xl font-bold mb-4">Ready to Make History?</h3>
-              <p className="text-gray-600 mb-6">
-                Upload the first dataset to VetDataHub and help launch the future of veterinary research collaboration.
-              </p>
-              <Button size="lg" asChild>
-                <Link href="/upload">
-                  Upload First Dataset
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   )

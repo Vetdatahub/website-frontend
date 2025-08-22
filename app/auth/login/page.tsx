@@ -30,8 +30,7 @@ export default function LoginPage() {
     console.log("Form submitted with data:", formData)
     try {
       loginUserSchema.parse(formData)
-      const response  = await axiosInstance.post('/api/auth/token', formData)
-      const {access, refresh} = response.data
+      await axiosInstance.post('/api/auth/token', formData)
       toast.success('User logged in sucessfully')
       router.push('/')
     } catch (error) {
@@ -111,7 +110,7 @@ export default function LoginPage() {
 
             <div className="text-center">
               <span className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/auth/register" className="text-green-600 hover:underline">
                   Sign up
                 </Link>
