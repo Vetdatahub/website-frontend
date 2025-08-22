@@ -69,7 +69,7 @@ jobs:
           rm -rf "$RUNTIME_DIR"
           mkdir -p "$RUNTIME_DIR"
           # copy build outputs and runtime files
-          cp -a .next public package.json package-lock.json next.config.js "$RUNTIME_DIR"/
+          cp -a .next package.json package-lock.json next.config.mjs "$RUNTIME_DIR"/
           # install production dependencies inside runtime
           pushd "$RUNTIME_DIR" >/dev/null
           npm ci --omit=dev
