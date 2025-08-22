@@ -1,4 +1,4 @@
-name: Deploy Next.js to Droplet (systemd, upload build)
+name: Deploy Next.js (lint → build → deploy)
 
 on:
   push:
@@ -8,109 +8,140 @@ concurrency:
   group: deploy-prod
   cancel-in-progress: true
 
+env:
+  WORKDIR: .                       
+  ARTIFACT_NAME: nextapp-runtime
+  RUNTIME_TAR: /tmp/nextapp-runtime.tgz
+  REMOTE_DIR: /var/www/nextapp
+  SERVICE_NAME: nextapp
 
 jobs:
-  deploy:
+  lint:
     runs-on: ubuntu-latest
-    env:
-      WORKDIR: .   # change to apps/web if monorepo
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
 
-      - name: Install & build
+      - name: Install deps
+        working-directory: ${{ env.WORKDIR }}
+        run: npm ci
+
+      - name: Lint
+        working-directory: ${{ env.WORKDIR }}
+        run: npm run lint
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
+
+      - name: Cache Next build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-next-
+
+      - name: Install deps & build (dev deps)
         working-directory: ${{ env.WORKDIR }}
         run: |
           npm ci
           npm run build
+          test -d .next || (echo ".next missing after build"; exit 1)
 
-      - name: Verify build outputs
+      - name: Prepare runtime bundle (prod-only)
         working-directory: ${{ env.WORKDIR }}
         run: |
-          test -d .next || (echo ".next not found (build failed or wrong WORKDIR)"; exit 1)
-          ls -la .next | head -n 50
+          RUNTIME_DIR="runtime"
+          rm -rf "$RUNTIME_DIR"
+          mkdir -p "$RUNTIME_DIR"
+          # copy build outputs and runtime files
+          cp -a .next public package.json package-lock.json next.config.js "$RUNTIME_DIR"/
+          # install production dependencies inside runtime
+          pushd "$RUNTIME_DIR" >/dev/null
+          npm ci --omit=dev
+          popd >/dev/null
+          # package the runtime as a tarball for deployment
+          tar -czf "${{ env.RUNTIME_TAR }}" -C "$RUNTIME_DIR" .
 
-      - name: Upload build artifacts to Droplet
-        uses: appleboy/scp-action@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.RUNTIME_TAR }}
+          retention-days: 7
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: .
+
+      - name: Verify artifact
+        run: |
+          ls -lh .
+          tar -tzf nextapp-runtime.tgz | head -n 20
+
+      - name: Write SSH key to file
+        run: |
+          umask 077
+          echo "${{ secrets.SSH_KEY }}" > id_deploy
+          head -n1 id_deploy | grep -E 'BEGIN (OPENSSH|RSA) PRIVATE KEY' >/dev/null || { echo "Invalid SSH private key"; exit 1; }
+
+      - name: Upload runtime tar via SFTP
+        uses: appleboy/sftp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          key_path: id_deploy
           port: ${{ secrets.SSH_PORT || 22 }}
-          overwrite: true
-          # Use either comma-separated…
-          source: ${{ env.WORKDIR }}/.next/**,${{ env.WORKDIR }}/public/**,${{ env.WORKDIR }}/package.json,${{ env.WORKDIR }}/package-lock.json,${{ env.WORKDIR }}/next.config.js
-          # …or multi-line (both work with this action)
-          # source: |
-          #   ${{ env.WORKDIR }}/.next/**
-          #   ${{ env.WORKDIR }}/public/**
-          #   ${{ env.WORKDIR }}/package.json
-          #   ${{ env.WORKDIR }}/package-lock.json
-          #   ${{ env.WORKDIR }}/next.config.js
-          target: /var/www/nextapp
+          source: nextapp-runtime.tgz
+          target: ${{ env.REMOTE_DIR }}/
 
-      - name: Configure systemd & start (prod deps only)
+      - name: Extract on server & restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          key_path: id_deploy
           port: ${{ secrets.SSH_PORT || 22 }}
           script_stop: true
           script: |
             set -euo pipefail
-            APP_NAME=nextapp
-            APP_DIR=/var/www/nextapp
-            NODE_MAJOR=20
-            PORT=3000
-            ENV_PATH=/etc/${APP_NAME}.env
+            APP_DIR="${{ env.REMOTE_DIR }}"
+            TARBALL="${{ env.REMOTE_DIR }}/nextapp-runtime.tgz"
+            TMP_DIR="${{ env.REMOTE_DIR }}/.tmp_release"
 
-            # Ensure Node on server
-            if ! command -v node >/dev/null; then
-              curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | sudo -E bash -
-              sudo apt-get install -y nodejs
-            fi
+            sudo mkdir -p "$APP_DIR"
+            sudo chown -R "$USER:$USER" "$APP_DIR"
 
-            # Optional env file from secret
-            if [ -n "${{ secrets.ENV_FILE || '' }}" ]; then
-              echo "${{ secrets.ENV_FILE }}" | sudo tee "$ENV_PATH" >/dev/null
-            fi
+            rm -rf "$TMP_DIR"
+            mkdir -p "$TMP_DIR"
+            tar -xzf "$TARBALL" -C "$TMP_DIR"
 
-            cd "$APP_DIR"
-            npm ci --omit=dev
+            # sync into app dir and remove stale files
+            rsync -a --delete "$TMP_DIR"/ "$APP_DIR"/
 
-            SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
-            sudo tee "$SERVICE_FILE" >/dev/null <<EOF
-            [Unit]
-            Description=Next.js app - ${APP_NAME}
-            After=network.target
+            rm -rf "$TMP_DIR" "$TARBALL"
+            echo "✅ Deployed to $APP_DIR"
 
-            [Service]
-            Type=simple
-            WorkingDirectory=${APP_DIR}
-            EnvironmentFile=-${ENV_PATH}
-            Environment=NODE_ENV=production
-            Environment=PORT=${PORT}
-            ExecStart=/usr/bin/npm run start
-            Restart=always
-            RestartSec=5
-            User=${USER}
-            Group=${USER}
-            StandardOutput=journal
-            StandardError=journal
-
-            [Install]
-            WantedBy=multi-user.target
-            EOF
-
-            sudo systemctl daemon-reload
-            sudo systemctl enable "${APP_NAME}.service"
-            sudo systemctl restart "${APP_NAME}.service"
-            sudo systemctl is-active "${APP_NAME}.service"
-            echo "✅ ${APP_NAME} running on port ${PORT}"
+            # restart existing systemd service
+            sudo systemctl restart "${{ env.SERVICE_NAME }}"
+            sudo systemctl is-active "${{ env.SERVICE_NAME }}" && echo "🚀 Service restarted: ${{ env.SERVICE_NAME }}"
