@@ -1,147 +1,83 @@
-name: Deploy Next.js (lint → build → deploy)
-
+name: VetDataHub Frontend Deploy
 on:
   push:
-    branches: [ main ]
-
-concurrency:
-  group: deploy-prod
-  cancel-in-progress: true
-
-env:
-  WORKDIR: .                       
-  ARTIFACT_NAME: nextapp-runtime
-  RUNTIME_TAR: /tmp/nextapp-runtime.tgz
-  REMOTE_DIR: /var/www/nextapp
-  SERVICE_NAME: nextapp
-
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
-
-      - name: Install deps
-        working-directory: ${{ env.WORKDIR }}
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
         run: npm ci
-
       - name: Lint
-        working-directory: ${{ env.WORKDIR }}
         run: npm run lint
 
   build:
     runs-on: ubuntu-latest
-    needs: [lint]
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
-
-      - name: Cache Next build cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.WORKDIR }}/.next/cache
-          key: ${{ runner.os }}-next-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-next-
-
-      - name: Install deps & build (dev deps)
-        working-directory: ${{ env.WORKDIR }}
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Archive production files
         run: |
-          npm ci
-          npm run build
-          test -d .next || (echo ".next missing after build"; exit 1)
-
-      - name: Prepare runtime bundle (prod-only)
-        working-directory: ${{ env.WORKDIR }}
-        run: |
-          RUNTIME_DIR="runtime"
-          rm -rf "$RUNTIME_DIR"
-          mkdir -p "$RUNTIME_DIR"
-          # copy build outputs and runtime files
-          cp -a .next package.json package-lock.json next.config.mjs "$RUNTIME_DIR"/
-          # install production dependencies inside runtime
-          pushd "$RUNTIME_DIR" >/dev/null
-          npm ci --omit=dev
-          popd >/dev/null
-          # package the runtime as a tarball for deployment
-          tar -czf "${{ env.RUNTIME_TAR }}" -C "$RUNTIME_DIR" .
-
-      - name: Upload artifact
+          tar -czf vetdatahub-frontend.tar.gz .next package.json package-lock.json public
+      - name: Upload build artifact
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.RUNTIME_TAR }}
-          retention-days: 7
+          name: vetdatahub-frontend
+          path: vetdatahub-frontend.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs:
+      - lint
+      - build
+    if: github.ref == 'refs/heads/main' && github.event.pull_request.head.repo == github.repository
     steps:
-      - name: Download artifact
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: .
-
-      - name: Verify artifact
-        run: |
-          ls -lh .
-          tar -tzf nextapp-runtime.tgz | head -n 20
-
-      - name: Write SSH key to file
-        run: |
-          umask 077
-          echo "${{ secrets.SSH_KEY }}" > id_deploy
-          head -n1 id_deploy | grep -E 'BEGIN (OPENSSH|RSA) PRIVATE KEY' >/dev/null || { echo "Invalid SSH private key"; exit 1; }
-
-      - name: Upload runtime tar via SCP
-        uses: appleboy/scp-action@v1
+          name: vetdatahub-frontend
+      - name: Copy files to DigitalOcean droplet
+        uses: appleboy/scp-action@v0.1.8
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          source: nextapp-runtime.tgz
-          target: ${{ env.REMOTE_DIR }}/
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_KEY }}
+          source: "vetdatahub-frontend.tar.gz"
+          target: ${{ secrets.DO_DEPLOY_PATH }}
 
-      - name: Extract on server & restart service
-        uses: appleboy/ssh-action@v1.0.3
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script_stop: true
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_KEY }}
           script: |
-            set -euo pipefail
-            APP_DIR="${{ env.REMOTE_DIR }}"
-            TARBALL="${{ env.REMOTE_DIR }}/nextapp-runtime.tgz"
-            TMP_DIR="${{ env.REMOTE_DIR }}/.tmp_release"
-
-            sudo mkdir -p "$APP_DIR"
-            sudo chown -R "$USER:$USER" "$APP_DIR"
-
-            rm -rf "$TMP_DIR"
-            mkdir -p "$TMP_DIR"
-            tar -xzf "$TARBALL" -C "$TMP_DIR"
-
-            # sync into app dir and remove stale files
-            rsync -a --delete "$TMP_DIR"/ "$APP_DIR"/
-
-            rm -rf "$TMP_DIR" "$TARBALL"
-            echo "✅ Deployed to $APP_DIR"
-
-            # restart existing systemd service
-            sudo systemctl restart "${{ env.SERVICE_NAME }}"
-            sudo systemctl is-active "${{ env.SERVICE_NAME }}" && echo "🚀 Service restarted: ${{ env.SERVICE_NAME }}"
+            cd ${{ secrets.DO_DEPLOY_PATH }}
+            tar -xzf vetdatahub-frontend.tar.gz
+            rm vetdatahub-frontend.tar.gz
+            npm install --production
+            # Restart your app using systemd
+            sudo systemctl restart vetdatahub-frontend.service
