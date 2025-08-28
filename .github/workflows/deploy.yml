@@ -79,5 +79,7 @@ jobs:
             tar -xzf vetdatahub-frontend.tar.gz
             rm vetdatahub-frontend.tar.gz
             npm install --production
-            # Restart your app using systemd
-            sudo systemctl restart vetdatahub-frontend.service
+            # Install PM2 if not already installed
+            npm install -g pm2
+            # Restart your app using PM2
+            pm2 restart vetdatahub-frontend || pm2 start npm --name "vetdatahub-frontend" -- start
