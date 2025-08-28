@@ -11,7 +11,7 @@ export const loginIn = async (username: string, password: string) => {
         });
         console.log("Login response:", response.data);
 
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
 
         cookieStore.set("accessToken", response.data.access, {
             httpOnly: true,

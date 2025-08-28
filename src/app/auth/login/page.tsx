@@ -10,7 +10,6 @@ import { Label } from "../../../components/ui/label"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { loginUserSchema } from "../../../schemas/auth"
-import axiosInstance from "../../../utils/axiosInstance"
 import { loginIn } from "@/src/actions/auth"
 import z from "zod"
 
