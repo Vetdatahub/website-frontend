@@ -60,7 +60,7 @@ jobs:
         with:
           name: vetdatahub-frontend
       - name: Copy files to DigitalOcean droplet
-        uses: appleboy/scp-action@v0.1.8
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
