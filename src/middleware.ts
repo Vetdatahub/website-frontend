@@ -12,17 +12,18 @@ export async function middleware(request: NextRequest) {
     // Allow public routes to proceed without authentication
     if (
         publicRoutes.some(
-            (route) => pathname === route || pathname.startsWith(route)
+            (route) => pathname === route 
         )
     ) {
         return NextResponse.next();
     }
 
     const accessToken = request.cookies.get("accessToken")?.value;
+    console.log("Access Token from cookies:", accessToken);
 
     if (!accessToken) {
         // No token: redirect to login
-        const refreshToken = request.cookies.get("token")?.value;
+        const refreshToken = request.cookies.get("refreshToken")?.value;
 
         if (!refreshToken) {
             // No refresh token available
@@ -75,8 +76,9 @@ export async function middleware(request: NextRequest) {
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/accounts/token/verify/`,
             {
                 method: "POST",
+                body: JSON.stringify({ token: accessToken }),
                 headers: {
-                    Authorization: `Bearer ${accessToken}`
+                    "Content-Type": "application/json"
                 }
             }
         );
@@ -92,7 +94,7 @@ export async function middleware(request: NextRequest) {
             }
 
             const refreshResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/token/refresh/`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/accounts/token/refresh/`,
                 {
                     method: "POST",
                     headers: {

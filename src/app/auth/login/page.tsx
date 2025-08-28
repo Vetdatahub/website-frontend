@@ -10,7 +10,7 @@ import { Label } from "../../../components/ui/label"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { loginUserSchema } from "../../../schemas/auth"
-import axiosInstance from "../../../utils/axiosInstance"
+import { loginIn } from "@/src/actions/auth"
 import z from "zod"
 
 export default function LoginPage() {
@@ -30,7 +30,7 @@ export default function LoginPage() {
     console.log("Form submitted with data:", formData)
     try {
       loginUserSchema.parse(formData)
-      await axiosInstance.post('/api/auth/token', formData)
+      await loginIn(formData.username, formData.password)
       toast.success('User logged in sucessfully')
       router.push('/')
     } catch (error) {
