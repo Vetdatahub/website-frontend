@@ -75,6 +75,20 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
+            # Install Node.js via nvm if not already installed
+            if ! command -v node &> /dev/null; then
+              # Download and install nvm
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+              # Load nvm
+              \. "$HOME/.nvm/nvm.sh"
+              # Download and install Node.js 22
+              nvm install 22
+              nvm use 22
+            else
+              # Load nvm if it exists (for existing installations)
+              [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
+            fi
+            
             cd ${{ secrets.DO_DEPLOY_PATH }}
             tar -xzf vetdatahub-frontend.tar.gz
             rm vetdatahub-frontend.tar.gz
