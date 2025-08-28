@@ -51,7 +51,7 @@ jobs:
     needs:
       - lint
       - build
-    if: github.ref == 'refs/heads/main' && github.event.pull_request.head.repo == github.repository
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Vetdatahub/website-frontend'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
