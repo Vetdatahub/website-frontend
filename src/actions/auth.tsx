@@ -56,3 +56,17 @@ export const refreshAuth = async () => {
         throw error;
     }
 };
+
+export const forgotPassword = async (email: string) => {
+    try {
+        const response = await axiosInstance.post("/api/accounts/forgot-password/", {
+            email
+        });
+        console.log("Forgot password response:", response.data);
+
+        return { success: true, message: "Password reset email sent successfully" };
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return { success: false, message: "Failed to send password reset email" };
+    }
+};
