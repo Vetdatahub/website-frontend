@@ -1,23 +1,146 @@
-"use client"
-
-import { useState } from "react"
 import { Search, Filter, Calendar, MapPin, Users, FileText, Star } from 'lucide-react'
 import Link from "next/link"
 import { Button } from "@/src/components/ui/button"
 import { Input } from "@/src/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Badge } from "@/src/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select"
-import { Checkbox } from "@/src/components/ui/checkbox"
 import { Label } from "@/src/components/ui/label"
 import { Separator } from "@/src/components/ui/separator"
-import { Slider } from "@/src/components/ui/slider"
 import Header from "@/src/components/header"
+import { cookies } from 'next/headers'
 
-export default function AdvancedSearchPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [dateRange, setDateRange] = useState([2020, 2024])
-  const [sampleSizeRange, setSampleSizeRange] = useState([100, 50000])
+interface Dataset {
+  id: string;
+  title?: string;
+  description?: string;
+  // Add other dataset properties as needed
+}
+
+interface Species {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface SearchParams {
+  q?: string;
+  category?: string;
+  species?: string;
+  page?: string;
+}
+
+async function fetchDatasets(searchParams: SearchParams) {
+  try {
+    const params = new URLSearchParams();
+    if (searchParams.q) params.append('search', searchParams.q);
+    if (searchParams.category) params.append('category', searchParams.category);
+    if (searchParams.species) params.append('species', searchParams.species);
+    if (searchParams.page) params.append('page', searchParams.page);
+
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/datasets/?${params}`;
+    console.log('Fetching datasets from:', url);
+    
+    // Get cookies from Next.js
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Datasets fetch failed:', response.status, response.statusText);
+      throw new Error(`Failed to fetch datasets: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching datasets:", error);
+    return { results: [], previous: null, next: null };
+  }
+}
+
+async function fetchCategories() {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/datasets/categories`;
+    console.log('Fetching categories from:', url);
+    
+    // Get cookies from Next.js
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Categories fetch failed:', response.status, response.statusText);
+      throw new Error(`Failed to fetch categories: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+}
+
+async function fetchSpecies() {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/datasets/species`;
+    console.log('Fetching species from:', url);
+    
+    // Get cookies from Next.js
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Species fetch failed:', response.status, response.statusText);
+      throw new Error(`Failed to fetch species: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching species:", error);
+    return [];
+  }
+}
+
+export default async function AdvancedSearchPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<SearchParams>
+}) {
+  // Await searchParams first
+  const resolvedSearchParams = await searchParams;
+  
+  // Fetch all data in parallel
+  const [datasetsResponse, categories, species] = await Promise.all([
+    fetchDatasets(resolvedSearchParams),
+    fetchCategories(),
+    fetchSpecies()
+  ]);
+
+  const datasets = datasetsResponse.results || [];
+  const prevLink = datasetsResponse.previous;
+  const nextLink = datasetsResponse.next;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,12 +166,14 @@ export default function AdvancedSearchPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Keywords */}
+                  <form className="space-y-4" action="/datasets" method="GET">
                   <div className="space-y-2">
                     <Label>Keywords</Label>
                     <Input 
                       placeholder="Enter keywords..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      type="text"
+                      name="q"
+                      defaultValue={resolvedSearchParams.q || ''}
                     />
                   </div>
 
@@ -58,10 +183,17 @@ export default function AdvancedSearchPage() {
                   <div className="space-y-3">
                     <Label>Species</Label>
                     <div className="space-y-2">
-                      {["Dog", "Cat", "Cattle", "Equine", "Poultry", "Wildlife", "Other"].map((species) => (
-                        <div key={species} className="flex items-center space-x-2">
-                          <Checkbox id={species} />
-                          <Label htmlFor={species} className="text-sm">{species}</Label>
+                      {species.map((sp: Species) => (
+                        <div key={sp.id} className="flex items-center space-x-2">
+                          <input 
+                            type="radio" 
+                            name="species" 
+                            value={sp.name} 
+                            id={sp.id}
+                            defaultChecked={resolvedSearchParams.species === sp.name}
+                            className="size-4 text-primary border-input focus:ring-2 focus:ring-ring"
+                          />
+                          <Label htmlFor={sp.id} className="text-sm">{sp.name}</Label>
                         </div>
                       ))}
                     </div>
@@ -73,122 +205,26 @@ export default function AdvancedSearchPage() {
                   <div className="space-y-3">
                     <Label>Category</Label>
                     <div className="space-y-2">
-                      {["Clinical Trials", "Epidemiology", "Genomics", "Imaging", "Pathology"].map((category) => (
-                        <div key={category} className="flex items-center space-x-2">
-                          <Checkbox id={category} />
-                          <Label htmlFor={category} className="text-sm">{category}</Label>
+                      {categories.map((category: Category) => (
+                        <div key={category?.id} className="flex items-center space-x-2">
+                          <input 
+                            type="radio" 
+                            name="category" 
+                            value={category?.name} 
+                            id={category?.name}
+                            defaultChecked={resolvedSearchParams.category === category?.name}
+                            className="size-4 text-primary border-input focus:ring-2 focus:ring-ring"
+                          />
+                          <Label htmlFor={category?.name} className="text-sm">{category?.name}</Label>
                         </div>
                       ))}
                     </div>
                   </div>
-
-                  <Separator />
-
-                  {/* Date Range */}
-                  <div className="space-y-3">
-                    <Label>Data Collection Period</Label>
-                    <div className="space-y-4">
-                      <div className="px-2">
-                        <Slider
-                          value={dateRange}
-                          onValueChange={setDateRange}
-                          min={2000}
-                          max={2024}
-                          step={1}
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>{dateRange[0]}</span>
-                        <span>{dateRange[1]}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Sample Size */}
-                  <div className="space-y-3">
-                    <Label>Sample Size</Label>
-                    <div className="space-y-4">
-                      <div className="px-2">
-                        <Slider
-                          value={sampleSizeRange}
-                          onValueChange={setSampleSizeRange}
-                          min={10}
-                          max={100000}
-                          step={10}
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>{sampleSizeRange[0].toLocaleString()}</span>
-                        <span>{sampleSizeRange[1].toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Location */}
-                  <div className="space-y-2">
-                    <Label>Location</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select region" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="north-america">North America</SelectItem>
-                        <SelectItem value="europe">Europe</SelectItem>
-                        <SelectItem value="asia">Asia</SelectItem>
-                        <SelectItem value="africa">Africa</SelectItem>
-                        <SelectItem value="oceania">Oceania</SelectItem>
-                        <SelectItem value="south-america">South America</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Separator />
-
-                  {/* File Format */}
-                  <div className="space-y-2">
-                    <Label>File Format</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Any format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="csv">CSV</SelectItem>
-                        <SelectItem value="json">JSON</SelectItem>
-                        <SelectItem value="parquet">Parquet</SelectItem>
-                        <SelectItem value="excel">Excel</SelectItem>
-                        <SelectItem value="netcdf">NetCDF</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Separator />
-
-                  {/* License */}
-                  <div className="space-y-2">
-                    <Label>License</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Any license" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cc-by">CC-BY-4.0</SelectItem>
-                        <SelectItem value="cc0">CC0</SelectItem>
-                        <SelectItem value="gpl">GPL-3.0</SelectItem>
-                        <SelectItem value="proprietary">Proprietary</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button className="w-full">
+                  <Button className="w-full" type="submit">
                     <Search className="h-4 w-4 mr-2" />
                     Search Datasets
                   </Button>
+                  </form>
                 </CardContent>
               </Card>
             </div>
@@ -198,32 +234,21 @@ export default function AdvancedSearchPage() {
               <div className="mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="text-sm text-gray-600">
-                    Found 42 datasets matching your criteria
+                    Found {datasets.length} datasets matching your criteria
                   </div>
-                  <Select defaultValue="relevance">
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relevance">Most Relevant</SelectItem>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                      <SelectItem value="downloads">Most Downloaded</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
               {/* Search Results */}
               <div className="space-y-6">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="hover:shadow-lg transition-shadow">
+                {datasets.map((dataset: Dataset) => (
+                  <Card key={dataset.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="flex-1">
                           <CardTitle className="text-xl mb-2">
-                            <Link href={`/datasets/${i}`} className="hover:text-green-600">
-                              Canine Orthopedic Conditions Survey {i}
+                            <Link href={`/datasets/${dataset.id}`} className="hover:text-green-600">
+                              Canine Orthopedic Conditions Survey {dataset.id}
                             </Link>
                           </CardTitle>
                           <div className="flex flex-wrap items-center gap-4 mb-3 text-sm text-gray-600">
@@ -274,7 +299,7 @@ export default function AdvancedSearchPage() {
 
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/datasets/${i}`}>View Details</Link>
+                          <Link href={`/datasets/${dataset.id}`}>View Details</Link>
                         </Button>
                         <div className="text-sm text-gray-500">
                           1,234 downloads • Updated Jan 15, 2024
@@ -283,15 +308,40 @@ export default function AdvancedSearchPage() {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
 
-              {/* Pagination */}
-              <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2 mt-8">
-                <Button variant="outline" disabled>Previous</Button>
-                <Button variant="outline" className="bg-green-600 text-white">1</Button>
-                <Button variant="outline">2</Button>
-                <Button variant="outline">3</Button>
-                <Button variant="outline">Next</Button>
+                {datasets.length > 0 ? (
+                  <div className="flex items-center justify-between mt-8">
+                    {prevLink ? (
+                      <Button variant="outline" asChild>
+                        <Link href={`/datasets?${new URLSearchParams({
+                          ...resolvedSearchParams,
+                          page: (parseInt(resolvedSearchParams.page || '1') - 1).toString()
+                        })}`}>
+                          Previous
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled>
+                        Previous
+                      </Button>
+                    )}
+                    
+                    {nextLink ? (
+                      <Button variant="outline" asChild>
+                        <Link href={`/datasets?${new URLSearchParams({
+                          ...resolvedSearchParams,
+                          page: (parseInt(resolvedSearchParams.page || '1') + 1).toString()
+                        })}`}>
+                          Next
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled>
+                        Next
+                      </Button>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
