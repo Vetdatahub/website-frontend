@@ -1,7 +1,4 @@
-"use client"
-
 import type React from "react"
-import { useState } from "react"
 import { ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/src/components/ui/button"
@@ -9,26 +6,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 import { Input } from "@/src/components/ui/input"
 import { Label } from "@/src/components/ui/label"
 import { Database } from "lucide-react"
-import toast from "react-hot-toast"
+import { forgotPassword } from "@/src/actions/auth"
+import { redirect } from "next/navigation"
 
-
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      setIsSubmitted(true)
-    }, 1500)
+interface ForgotPasswordPageProps {
+  searchParams?: {
+    success?: string
+    error?: string
+    email?: string
   }
+}
+
+async function handleForgotPassword(formData: FormData) {
+  "use server"
+  
+  const email = formData.get("email") as string
+  
+  if (!email) {
+    redirect("/auth/forgot-password?error=Email is required")
+  }
+
+  const result = await forgotPassword(email)
+  
+  if (result.success) {
+    redirect(`/auth/forgot-password?success=true&email=${encodeURIComponent(email)}`)
+  } else {
+    redirect(`/auth/forgot-password?error=${encodeURIComponent(result.message)}`)
+  }
+}
+
+export default function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
+  const isSubmitted = searchParams?.success === "true"
+  const error = searchParams?.error
+  const emailParam = searchParams?.email ? decodeURIComponent(searchParams.email) : ""
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
@@ -59,27 +69,34 @@ export default function ForgotPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+            
             {!isSubmitted ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form action={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="your.email@institution.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
 
-                <Button type="submit" className="w-full" disabled={!email || isLoading}>
-                  {isLoading ? "Sending..." : "Send Reset Link"}
+                <Button type="submit" className="w-full">
+                  Send Reset Link
                 </Button>
               </form>
             ) : (
               <div className="space-y-4">
-                {toast.success("Email sent successfully!. We've sent password reset instructions to email")}
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                  Email sent successfully! We&apos;ve sent password reset instructions to {emailParam}
+                </div>
 
                 <div className="text-sm text-gray-600 space-y-2">
                   <p>If you don&apos;t see the email in your inbox:</p>
@@ -93,12 +110,11 @@ export default function ForgotPasswordPage() {
                 <Button
                   variant="outline"
                   className="w-full bg-transparent"
-                  onClick={() => {
-                    setIsSubmitted(false)
-                    setEmail("")
-                  }}
+                  asChild
                 >
-                  Try Different Email
+                  <Link href="/auth/forgot-password">
+                    Try Different Email
+                  </Link>
                 </Button>
               </div>
             )}
@@ -122,15 +138,6 @@ export default function ForgotPasswordPage() {
             </div>
           </CardContent>
         </Card>
-
-        <div className="mt-8 text-center text-sm text-gray-600">
-          <p>
-            Need help? Contact our{" "}
-            <Link href="/coming-soon" className="text-green-600 hover:underline">
-              support team
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   )
