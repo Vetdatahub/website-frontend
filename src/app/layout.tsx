@@ -3,8 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 import {Toaster} from 'react-hot-toast'
-import { SupportButton } from '../components/support-button'
-import AxiosInterceptorWrapper from './axios-interceptor-wrapper'
+
 
 export const metadata: Metadata = {
   title: 'VetDataHub',
@@ -26,13 +25,13 @@ html {
   --font-mono: ${GeistMono.variable};
 }
         `}</style>
+      
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&amp;family=Poppins:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
       </head>
       <body>
-        <AxiosInterceptorWrapper>
           <Toaster position="top-right" reverseOrder={true} />
           {children}
-          <SupportButton />
-        </AxiosInterceptorWrapper>
       </body>
     </html>
   )
