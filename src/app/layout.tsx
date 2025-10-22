@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
-import {Toaster} from 'react-hot-toast'
 
 
 export const metadata: Metadata = {
@@ -29,8 +28,7 @@ html {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&amp;family=Poppins:wght@600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
       </head>
-      <body className="bg-background-light dark:bg-background-dark font-body">
-          <Toaster position="top-right" reverseOrder={true} />
+      <body>
           {children}
       </body>
     </html>
