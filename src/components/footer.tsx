@@ -14,14 +14,14 @@ export default function Footer(){
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-center text-sm">
-                  <a className="hover:text-primary transition-colors" href="#">
+                  {/* <a className="hover:text-primary transition-colors" href="#">
                     Terms of Service
                   </a>
                   <a className="hover:text-primary transition-colors" href="#">
                     Privacy Policy
-                  </a>
-                  <a className="hover:text-primary transition-colors" href="#">
-                    Contact
+                  </a> */}
+                  <a className="hover:text-primary transition-colors" href="/contact-us">
+                    Contact Us
                   </a>
                 </div>
                 <div className="flex gap-4">
