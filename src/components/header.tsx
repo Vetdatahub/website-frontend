@@ -44,9 +44,22 @@ export default function Header() {
             Sponsor Us
           </Link>
         </div>
-        <button className="hidden md:flex min-w-[70px] sm:min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-3 sm:px-5 bg-primary text-white text-xs sm:text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
-          <span className="truncate">Sign In/Up</span>
-        </button>
+        <div className="hidden md:flex items-center gap-2">
+          <Link
+            href="/login"
+            aria-label="Sign in"
+            className="inline-flex items-center justify-center min-w-[70px] sm:min-w-[84px] h-9 sm:h-10 px-3 sm:px-4 rounded-lg border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/register"
+            aria-label="Sign up"
+            className="inline-flex items-center justify-center min-w-[84px] h-9 sm:h-10 px-3 sm:px-4 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+          >
+            Sign Up
+          </Link>
+        </div>
         {/* Mobile menu */}
         <details className="relative md:hidden">
           <summary className="list-none flex items-center justify-center p-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer select-none">
@@ -83,10 +96,13 @@ export default function Header() {
             >
               Sponsor Us
             </Link>
-            <div className="px-3 pt-2">
-              <button className="w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
-                <span className="truncate">Sign In/Up</span>
-              </button>
+            <div className="px-3 pt-2 space-y-2">
+              <Link href="/login" className="block w-full text-center px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">
+                Sign In
+              </Link>
+              <Link href="/register" className="block w-full text-center px-4 py-2 rounded-lg bg-primary text-white">
+                Sign Up
+              </Link>
             </div>
           </div>
         </details>
